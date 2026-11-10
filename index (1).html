@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#F7F1E8">
+<title>The Melt Club — WhatsApp assistant demo</title>
+<meta name="description" content="Demo: an AI assistant that answers and books classes on WhatsApp, day and night.">
+<meta property="og:title" content="The Melt Club — Your WhatsApp, answering and booking around the clock">
+<meta property="og:description" content="WhatsApp booking assistant demo by System Unity.">
+<meta property="og:image" content="https://abdell-el.github.io/melt-club-agent/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..900,0..100,0..1;1,9..144,300..900,0..100,0..1&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* page */
+  --ivory:#F7F1E8;--parchment:#EFE5D6;--linen:#E6D8C4;--camel:#C4A07A;--gold:#B89A6A;--apricot:#EBBE9C;--blush:#F3D9C6;--terra:#B0603F;
+  --claret:#5A1A24;--claret-deep:#3B0F17;--ink:#3A201C;--muted:#8A7266;--faint:#B3A090;--line:#DCCBB5;
+  /* WhatsApp light */
+  --wa-bg:#EFE7DC;--wa-head:#FBF8F3;--wa-in:#FFFFFF;--wa-out:#DCF5D2;--wa-ink:#111B21;--wa-muted:#667781;--wa-accent:#027EB5;--wa-green:#25D366;--wa-tick:#53BDEB;
+  --ui:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --ease:cubic-bezier(.2,.75,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--ivory);color:var(--ink);font-family:Manrope,system-ui,sans-serif;-webkit-text-size-adjust:100%;overflow:hidden}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+:focus-visible{outline:1.5px solid var(--claret);outline-offset:2px;border-radius:4px}
+
+/* ============ page (desktop) ============ */
+.page{position:relative;height:100%;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:56px;padding:28px 40px;isolation:isolate;
+  background:radial-gradient(70% 80% at 50% 45%,#FBF5EC 0%,var(--ivory) 50%,var(--parchment) 100%)}
+.glow{position:absolute;z-index:-1;left:50%;top:48%;width:760px;aspect-ratio:1;margin:-380px 0 0 -380px;border-radius:50%;
+  background:radial-gradient(circle,rgba(243,217,198,.9),rgba(235,190,156,.35) 45%,rgba(235,190,156,0) 70%);animation:breathe 8s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.intro{justify-self:end;max-width:310px}
+.mark{font-weight:500;font-size:.625rem;letter-spacing:.34em;color:var(--claret)}
+.mark b{font-family:Fraunces,serif;font-variation-settings:"SOFT" 100,"WONK" 1;font-weight:800;letter-spacing:0;font-size:1.25rem;margin:0 6px;vertical-align:-2px}
+.intro h1{font-family:Fraunces,serif;font-variation-settings:"SOFT" 100,"opsz" 72;font-weight:300;font-size:2.5rem;line-height:1.05;color:var(--claret);margin:30px 0 14px}
+.intro h1 em{font-style:italic;color:var(--terra)}
+.intro p{color:var(--muted);font-size:.9375rem;line-height:1.6}
+.ctrl{display:flex;gap:10px;align-items:center;margin-top:26px}
+.seg{display:flex;border:1px solid var(--line);border-radius:20px;padding:3px;gap:2px;background:rgba(255,255,255,.4)}
+.seg button{padding:5px 12px;font-size:.8125rem;border-radius:16px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--claret);color:var(--ivory)}
+.replay{display:flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--line);border-radius:20px;font-size:.8125rem;color:var(--claret);background:rgba(255,255,255,.4)}
+.replay svg{width:14px;height:14px}
+.fine{margin-top:22px;font-size:.75rem;color:var(--faint);line-height:1.5;font-style:italic}
+
+.phone{width:390px;height:min(820px,calc(100vh - 56px));border-radius:48px;padding:11px;background:#F4EEE6;
+  box-shadow:0 0 0 1px #D9CBB8,0 0 0 6px #EDE3D5,0 0 0 7px #D3C3AE,0 40px 80px -20px rgba(90,26,36,.35);position:relative}
+.phone::before{content:"";position:absolute;top:22px;left:50%;width:96px;height:28px;margin-left:-48px;border-radius:16px;background:#1A1414;z-index:10}
+.app{height:100%;border-radius:38px;overflow:hidden;display:flex;flex-direction:column;background:var(--wa-bg);position:relative;font-family:var(--ui);font-size:15px;color:var(--wa-ink)}
+
+/* studio panel */
+.studio{justify-self:start;width:300px;background:rgba(251,247,241,.85);border:1px solid var(--line);border-radius:22px;padding:20px 18px 14px;box-shadow:0 20px 40px -24px rgba(90,26,36,.25)}
+.studio h2{font-family:Fraunces,serif;font-variation-settings:"SOFT" 100;font-weight:400;font-size:1.4rem;color:var(--claret)}
+.studio .when{font-size:.8125rem;color:var(--muted);margin:2px 0 16px}
+.studio .cls{display:flex;justify-content:space-between;align-items:baseline;padding:12px 0;border-top:1px solid var(--line)}
+.studio .cls b{font-family:Fraunces,serif;font-variation-settings:"SOFT" 100;font-weight:500;font-size:1.05rem;color:var(--claret)}
+.studio .cls span{font-size:.8125rem;color:var(--muted)}
+.mirror{height:4px;border-radius:2px;background:linear-gradient(90deg,#D6C3A8,#FBF6EE 45%,#D6C3A8);margin:4px 8% 10px}
+.rg{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.rf{position:relative;aspect-ratio:.45;border-radius:10px;border:1px solid var(--camel);background:var(--ivory);display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding-bottom:4px;font-family:Fraunces,serif;font-size:.6875rem;color:var(--muted);overflow:hidden}
+.rf::before{content:"";position:absolute;left:18%;right:18%;top:12%;height:24%;border-radius:6px;background:var(--linen);transition:transform .8s var(--ease),background .4s}
+.rf.taken{background:var(--parchment);border-color:var(--line);opacity:.5}
+.rf.taken::before{background:var(--line)}
+.rf.new{border-color:var(--claret);background:linear-gradient(180deg,#FCEDE0,var(--blush));color:var(--claret);font-weight:600;animation:land .7s var(--ease)}
+.rf.new::before{background:var(--claret);transform:translateY(130%)}
+@keyframes land{from{transform:scale(.85)}to{transform:none}}
+.count{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:.8125rem;color:var(--muted)}
+.count b{font-family:Fraunces,serif;font-weight:500;font-size:1.05rem;color:var(--claret)}
+.who-new{min-height:44px;margin-top:10px;font-size:.8125rem;color:var(--muted);opacity:0;transform:translateY(6px);transition:all .5s var(--ease)}
+.who-new.on{opacity:1;transform:none}
+.who-new b{display:block;color:var(--claret);font-weight:600}
+.who-new .ok{color:#3E8E5E}
+.studio .foot{font-size:.75rem;color:var(--faint);padding:8px 0 2px;font-style:italic}
+
+/* ============ WhatsApp (light) ============ */
+.top{display:flex;align-items:center;gap:10px;padding:52px 12px 10px;background:var(--wa-head);flex:none;border-bottom:1px solid #E9E1D5}
+.top svg{width:22px;height:22px;flex:none;color:#3B4A54}
+.ava{width:38px;height:38px;border-radius:50%;flex:none;display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 42%,#FFF4E6,#F9DFC7 35%,var(--apricot) 75%)}
+.ava b{font-family:Fraunces,serif;font-variation-settings:"SOFT" 100,"WONK" 1;font-weight:800;font-size:12px;color:var(--claret);letter-spacing:-.3px}
+.who{flex:1;min-width:0}
+.who b{display:flex;align-items:center;gap:5px;font-weight:600;font-size:16px}
+.who b svg{width:15px;height:15px;color:var(--wa-green)}
+.who span{font-size:12.5px;color:var(--wa-muted);display:block}
+.who span.typing{color:#1DA851}
+.icons{display:flex;gap:18px;padding-right:4px}
+
+.strip{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px;background:#F7F1E8;border-bottom:1px solid #E9E1D5;font-size:11.5px;color:var(--muted);flex:none}
+.strip .seg button{padding:2px 9px;font-size:11px}
+.strip .replay{padding:3px 9px;font-size:11px}
+.strip .replay svg{width:11px;height:11px}
+
+.chat{flex:1;overflow-y:auto;padding:10px 12px 14px;scrollbar-width:none;background-color:var(--wa-bg);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%235A1A24' stroke-opacity='.05' stroke-width='1.1'%3E%3Ccircle cx='22' cy='24' r='9'/%3E%3Ccircle cx='16' cy='30' r='9'/%3E%3Ccircle cx='28' cy='30' r='9'/%3E%3Cpath d='M70 70l20 20M90 70L70 90'/%3E%3Ccircle cx='80' cy='80' r='5'/%3E%3Cpath d='M85 20q8 10 0 20'/%3E%3Cpath d='M20 90q10-8 20 0'/%3E%3C/g%3E%3C/svg%3E")}
+.chat::-webkit-scrollbar{display:none}
+.chip{margin:10px auto 8px;padding:5px 12px;border-radius:8px;background:#FFFFFF;color:var(--wa-muted);font-size:12px;width:max-content;box-shadow:0 1px .5px rgba(11,20,26,.13);animation:pop .3s var(--ease)}
+.row{display:flex;margin-top:3px}
+.row.out{justify-content:flex-end}
+.row.first{margin-top:10px}
+.b{position:relative;max-width:82%;padding:6px 8px 7px 9px;border-radius:8px;line-height:1.38;white-space:pre-line;word-wrap:break-word;animation:pop .28s var(--ease);box-shadow:0 1px .5px rgba(11,20,26,.13)}
+.in .b{background:var(--wa-in)}
+.out .b{background:var(--wa-out)}
+.first.in .b{border-top-left-radius:0}
+.first.out .b{border-top-right-radius:0}
+.first.in .b::before,.first.out .b::before{content:"";position:absolute;top:0;width:8px;height:13px}
+.first.in .b::before{left:-8px;background:var(--wa-in);clip-path:polygon(100% 0,0 0,100% 100%)}
+.first.out .b::before{right:-8px;background:var(--wa-out);clip-path:polygon(0 0,100% 0,0 100%)}
+@keyframes pop{from{opacity:0;transform:translateY(6px) scale(.98)}to{opacity:1;transform:none}}
+.meta{float:right;margin:6px 0 -4px 10px;font-size:11px;color:var(--wa-muted);display:flex;align-items:center;gap:3px;white-space:nowrap}
+.meta svg{width:16px;height:11px;color:var(--wa-tick)}
+.b .opts{clear:both;margin:8px -8px -7px -9px;border-top:1px solid #EEE9E2}
+.opt{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;padding:10px 12px;text-align:left;border-bottom:1px solid #F1ECE5;position:relative;overflow:hidden}
+.opt:last-child{border-bottom:0}
+.opt b{font-weight:500;font-size:14.5px;display:block}
+.opt small{color:var(--wa-muted);font-size:12.5px}
+.opt .pr{font-size:14px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.opt .tag{display:inline-block;margin-left:6px;padding:0 7px;border-radius:8px;background:#FCEDE0;color:var(--terra);font-size:11px;vertical-align:1px}
+.btns{clear:both;display:flex;flex-direction:column;margin:8px -8px -7px -9px;border-top:1px solid #EEE9E2}
+.btns.grid{display:grid;grid-template-columns:repeat(2,1fr)}
+.btns button{padding:10px 6px;color:var(--wa-accent);font-size:14.5px;font-weight:500;position:relative;overflow:hidden;border-bottom:1px solid #F1ECE5}
+.btns button small{display:block;color:var(--wa-muted);font-weight:400;font-size:12px}
+.btns.grid button{border-bottom:0;border-right:1px solid #F1ECE5}
+.btns.grid button:last-child{border-right:0}
+.btns:not(.grid) button:last-child{border-bottom:0}
+.tapped{background:rgba(11,20,26,.05)}
+.ripple{position:absolute;width:12px;height:12px;border-radius:50%;background:rgba(2,126,181,.25);transform:translate(-50%,-50%) scale(0);animation:rip .5s ease-out forwards;pointer-events:none}
+@keyframes rip{to{transform:translate(-50%,-50%) scale(22);opacity:0}}
+.card .ok{display:flex;align-items:center;gap:6px;font-weight:600;margin-bottom:6px}
+.card .ok i{width:18px;height:18px;border-radius:50%;background:var(--wa-green);display:grid;place-items:center;font-style:normal;font-size:11px;color:#fff}
+.card dl{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:14px;margin:4px 0 6px;white-space:normal}
+.card dt{color:var(--wa-muted)}
+.card dd{text-align:right}
+.dots{display:inline-flex;gap:4px;padding:5px 4px}
+.dots i{width:7px;height:7px;border-radius:50%;background:#A3AEB5;animation:bounce 1.1s infinite}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,60%,100%{transform:none;opacity:.5}30%{transform:translateY(-4px);opacity:1}}
+
+.bar{display:flex;align-items:center;gap:8px;padding:6px 8px calc(8px + env(safe-area-inset-bottom));flex:none}
+.field{flex:1;display:flex;align-items:center;gap:10px;min-height:44px;padding:0 12px;border-radius:24px;background:#FFFFFF;color:#8696A0;font-size:15.5px;box-shadow:0 1px .5px rgba(11,20,26,.1)}
+.field svg{width:22px;height:22px;flex:none}
+.field .txt{flex:1;color:var(--wa-ink);white-space:nowrap;overflow:hidden}
+.field .txt:empty::before{content:attr(data-ph);color:#8696A0}
+.field .caret{display:inline-block;width:1.5px;height:18px;background:#1DA851;vertical-align:-3px;margin-left:1px;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.send{width:46px;height:46px;border-radius:50%;background:var(--wa-green);display:grid;place-items:center;flex:none;color:#fff;transition:transform .15s}
+.send svg{width:22px;height:22px}
+.send.press{transform:scale(.9)}
+
+.toast{position:absolute;left:10px;right:10px;top:48px;z-index:20;display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:18px;
+  background:rgba(251,247,241,.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--line);box-shadow:0 12px 30px -12px rgba(90,26,36,.35);
+  transform:translateY(-150%);transition:transform .6s var(--ease);font-family:Manrope,sans-serif}
+.toast.on{transform:none}
+.toast .ic{width:34px;height:34px;border-radius:10px;background:var(--claret);display:grid;place-items:center;flex:none;color:var(--ivory)}
+.toast .ic svg{width:18px;height:18px}
+.toast b{display:block;font-size:13px;color:var(--claret)}
+.toast span{font-size:12.5px;color:var(--muted)}
+
+.endcap{position:absolute;left:50%;bottom:86px;transform:translate(-50%,20px);opacity:0;padding:9px 18px;border-radius:20px;background:var(--claret);color:var(--ivory);font-family:Manrope,sans-serif;font-size:13px;font-weight:600;transition:all .4s var(--ease);display:flex;align-items:center;gap:6px;z-index:15;box-shadow:0 10px 24px -10px rgba(90,26,36,.5)}
+.endcap.on{opacity:1;transform:translate(-50%,0)}
+.endcap svg{width:14px;height:14px}
+
+@media (max-width:1060px){
+  .intro,.studio,.glow{display:none}
+  .page{display:block;padding:0;background:var(--wa-bg)}
+  .phone{width:100%;height:100%;border-radius:0;padding:0;box-shadow:none;background:var(--wa-bg)}
+  .phone::before{display:none}
+  .app{border-radius:0}
+  .top{padding-top:calc(10px + env(safe-area-inset-top))}
+  .toast{top:calc(8px + env(safe-area-inset-top))}
+}
+@media (min-width:1061px){ .toast{display:none} .strip .seg,.strip .replay{display:none} }
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="page">
+  <span class="glow" aria-hidden="true"></span>
+  <aside class="intro">
+    <div class="mark">THE<b>melt°</b>CLUB</div>
+    <h1 data-i="h1"></h1>
+    <p data-i="lead"></p>
+    <div class="ctrl">
+      <div class="seg" role="group" aria-label="Language">
+        <button data-lang="en" aria-pressed="true">EN</button><button data-lang="fr" aria-pressed="false">FR</button><button data-lang="da" aria-pressed="false">Darija</button>
+      </div>
+      <button class="replay" data-replay><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg><span data-i="replay"></span></button>
+    </div>
+    <p class="fine" data-i="fine"></p>
+  </aside>
+
+  <div class="phone">
+    <div class="app">
+      <div class="toast" id="toast" role="status">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span>
+        <span><b data-i="toastT"></b><span id="toastS"></span></span>
+      </div>
+      <header class="top">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        <span class="ava" aria-hidden="true"><b>melt°</b></span>
+        <div class="who"><b>The Melt Club <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 2.1 3.2-.3.9 3.1 2.9 1.4-1 3.1 1 3.1-2.9 1.4-.9 3.1-3.2-.3L12 22l-2.4-2.1-3.2.3-.9-3.1-2.9-1.4 1-3.1-1-3.1 2.9-1.4.9-3.1 3.2.3z"/><path d="M8.5 12.3l2.3 2.3 4.7-4.9" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg></b><span id="status"></span></div>
+        <div class="icons" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-3v10l-6-3"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>
+        </div>
+      </header>
+      <div class="strip">
+        <span data-i="strip"></span>
+        <span style="display:flex;gap:6px">
+          <span class="seg" role="group" aria-label="Language"><button data-lang="en" aria-pressed="true">EN</button><button data-lang="fr" aria-pressed="false">FR</button><button data-lang="da" aria-pressed="false">DA</button></span>
+          <button class="replay" data-replay aria-label="Replay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+        </span>
+      </div>
+      <div class="chat" id="chat" aria-live="polite"></div>
+      <div class="bar">
+        <div class="field">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5s1.3 1.8 3.5 1.8 3.5-1.8 3.5-1.8M9 9.5h.01M15 9.5h.01"/></svg>
+          <span class="txt" id="txt" data-ph="Message"></span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.4 11.6l-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg>
+        </div>
+        <button class="send" id="send" aria-hidden="true" tabindex="-1">
+          <svg id="mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5"/></svg>
+          <svg id="plane" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M3 20.5l18-8.5L3 3.5v6.6l12.5 1.9L3 13.9z"/></svg>
+        </button>
+      </div>
+      <div class="endcap" id="endcap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg><span data-i="replay"></span></div>
+    </div>
+  </div>
+
+  <aside class="studio" aria-live="polite">
+    <h2 data-i="studioT"></h2>
+    <div class="when" id="stWhen"></div>
+    <div class="cls"><b>Reformer Flow</b><span data-i="stCoach"></span></div>
+    <div class="mirror"></div>
+    <div class="rg" id="rg"></div>
+    <div class="count"><span data-i="booked"></span><b id="cnt"></b></div>
+    <div class="who-new" id="whoNew"></div>
+    <div class="foot" data-i="studioFoot"></div>
+  </aside>
+</div>
+
+<script>
+const TAKEN=[1,2,3,5,6,8,9,10];
+const T={
+  en:{locale:"en-GB",
+    h1:'Your WhatsApp, <em>answering and booking</em> while you teach.',
+    lead:"A client messages at 9:47pm asking about prices and a class tomorrow. The assistant replies in seconds, suggests the welcome offer, books her reformer and sends the reminder on the day.",
+    fine:"Demo by System Unity for The Melt Club. Classes, prices and times are examples.",
+    replay:"Replay",strip:"Demo · prices are examples",online:"online",typing:"typing…",today:"Today",
+    q:"Hi! How much is a reformer class? Do you have anything tomorrow evening?",
+    hello:"Hi and welcome to The Melt Club 🤍\nHere are our options:",
+    opts:[["First class","50 min","150 MAD","Welcome offer"],["Single class","50 min","250 MAD",""],["Pack of 10","Valid 3 months","2 000 MAD",""]],
+    suggest:"Since it's your first time, the welcome offer is the perfect start.",
+    pickO:0,
+    slotsIntro:d=>`Lovely ✨ ${d}, we have:`,
+    slots:[["18:00","Reformer Flow · 2 spots"],["19:30","Melt & Stretch · 5 spots"]],
+    reformers:"Reformers 4 and 7 are free. Which one would you like? Number 4 is closest to the mirror.",
+    r4:"Reformer 4",r7:"Reformer 7",
+    askName:"Perfect. What name should I book it under?",
+    name:"Salma Bennani",
+    ok:"You're booked",lCls:"Class",lDate:"Date",lTime:"Time",lSpot:"Spot",lCoach:"Coach",lPrice:"Price",
+    after:"Arrive 10 minutes early and bring grip socks. To reschedule, just reply here.",
+    remind:"Hi Salma, see you tonight at 18:00 for Reformer Flow, Reformer 4 is yours. Grip socks on 🧦",
+    yes:"See you there",move:"Reschedule",
+    bye:"Wonderful. See you on the reformer, Salma 🤍",
+    toastT:"New booking",toast:"Tomorrow 18:00 · Reformer 4 · Salma B.",
+    studioT:"Studio",stCoach:"with Yasmine",booked:"Booked",studioFoot:"Bookings made by the assistant land here, no work for the team.",
+    newWho:"Salma B. · Reformer 4",newVia:"Booked via WhatsApp assistant",newOk:"Confirmed for today ✓"
+  },
+  fr:{locale:"fr-FR",
+    h1:'Votre WhatsApp <em>répond et réserve</em> pendant vos cours.',
+    lead:"Une cliente écrit à 21h47 pour un tarif et un cours demain. L'assistant répond en quelques secondes, propose l'offre de bienvenue, réserve son reformer et envoie le rappel le jour même.",
+    fine:"Démo réalisée par System Unity pour The Melt Club. Cours, tarifs et horaires donnés à titre d'exemple.",
+    replay:"Rejouer",strip:"Démo · tarifs donnés à titre d'exemple",online:"en ligne",typing:"écrit…",today:"Aujourd'hui",
+    q:"Bonsoir ! C'est combien un cours de reformer ? Vous avez quelque chose demain soir ?",
+    hello:"Bonsoir et bienvenue au Melt Club 🤍\nVoici nos formules :",
+    opts:[["Premier cours","50 min","150 MAD","Offre de bienvenue"],["Cours à l'unité","50 min","250 MAD",""],["Carnet de 10","Valable 3 mois","2 000 MAD",""]],
+    suggest:"Pour une première fois, l'offre de bienvenue est idéale.",
+    pickO:0,
+    slotsIntro:d=>`Avec plaisir ✨ ${d}, nous avons :`,
+    slots:[["18:00","Reformer Flow · 2 places"],["19:30","Melt & Stretch · 5 places"]],
+    reformers:"Les reformers 4 et 7 sont libres. Lequel préférez-vous ? Le 4 est le plus proche du miroir.",
+    r4:"Reformer 4",r7:"Reformer 7",
+    askName:"Parfait. À quel nom je réserve ?",
+    name:"Salma Bennani",
+    ok:"C'est réservé",lCls:"Cours",lDate:"Date",lTime:"Heure",lSpot:"Place",lCoach:"Coach",lPrice:"Prix",
+    after:"Arrivez 10 minutes avant et pensez à vos chaussettes antidérapantes. Pour décaler, répondez simplement ici.",
+    remind:"Bonjour Salma, on se voit ce soir à 18:00 pour le Reformer Flow, le reformer 4 vous attend. Chaussettes antidérapantes 🧦",
+    yes:"À ce soir",move:"Décaler",
+    bye:"Parfait. À ce soir sur le reformer, Salma 🤍",
+    toastT:"Nouvelle réservation",toast:"Demain 18:00 · Reformer 4 · Salma B.",
+    studioT:"Studio",stCoach:"avec Yasmine",booked:"Réservés",studioFoot:"Les réservations prises par l'assistant arrivent ici, sans travail pour l'équipe.",
+    newWho:"Salma B. · Reformer 4",newVia:"Réservé via l'assistant WhatsApp",newOk:"Confirmé pour ce soir ✓"
+  },
+  da:{locale:"fr-FR",
+    h1:'WhatsApp dyalkom <em>kayjaweb w kayréservi</em> w ntoma f cours.',
+    lead:"Cliente katkteb m3a 21:47 3la tarif w cours ghedda. L'assistant kayjaweb f thawani, kay9tare7 l'offre de bienvenue, kayréservi lha reformer w kaysifet rappel nhar l cours.",
+    fine:"Démo dyal System Unity l The Melt Club. Les cours, les tarifs w les horaires ghir des exemples.",
+    replay:"3awed",strip:"Démo · les tarifs ghir des exemples",online:"en ligne",typing:"kaykteb…",today:"Lyoum",
+    q:"Salam ! Chhal cours dyal reformer ? Wach kayn chi haja ghedda f l3chiya ?",
+    hello:"Salam w mrehba bik f The Melt Club 🤍\nHadou homa les formules :",
+    opts:[["Premier cours","50 min","150 MAD","Offre de bienvenue"],["Cours à l'unité","50 min","250 MAD",""],["Carnet de 10","Valable 3 mois","2 000 MAD",""]],
+    suggest:"L'awel merra, l'offre de bienvenue hiya li mzyana lik.",
+    pickO:0,
+    slotsIntro:d=>`B kol farha ✨ ${d}, 3ndna :`,
+    slots:[["18:00","Reformer Flow · 2 blayss"],["19:30","Melt & Stretch · 5 blayss"]],
+    reformers:"Reformer 4 w 7 khawyin. Ach bghiti ? Rab3a hiya l9riba l l'miroir.",
+    r4:"Reformer 4",r7:"Reformer 7",
+    askName:"Mzyan. B smiyat men ndir la réservation ?",
+    name:"Salma Bennani",
+    ok:"Tréservat",lCls:"Cours",lDate:"Nhar",lTime:"Sa3a",lSpot:"Blassa",lCoach:"Coach",lPrice:"Taman",
+    after:"Ji 10 d9aye9 9bel w jibi tqachr antidérapants. Ila bghiti tbeddel, ghir jawbi hna.",
+    remind:"Salam Salma, ntla9aw lyoum m3a 18:00 f Reformer Flow, reformer 4 dyalek. Matnsaych tqachr 🧦",
+    yes:"Ntla9aw",move:"Nbeddel",
+    bye:"Mzyan. Ntla9aw 3la reformer, Salma 🤍",
+    toastT:"Réservation jdida",toast:"Ghedda 18:00 · Reformer 4 · Salma B.",
+    studioT:"Studio",stCoach:"m3a Yasmine",booked:"Mréserviyin",studioFoot:"Les réservations dyal l'assistant kaywslo hna, bla ma l'équipe tdir walou.",
+    newWho:"Salma B. · Reformer 4",newVia:"Tréservat b l'assistant WhatsApp",newOk:"Mconfirmya lyoum ✓"
+  }
+};
+/* Darija is only for the chat messages; the interface stays in French */
+["h1","lead","fine","replay","strip","online","typing","today","toastT","toast","studioT","stCoach","booked","studioFoot","newWho","newVia","newOk","lCls","lDate","lTime","lSpot","lCoach","lPrice"].forEach(k=>T.da[k]=T.fr[k]);
+let lang="en";try{const s=localStorage.getItem("melt-agent-lang");if(s&&T[s])lang=s}catch(e){}
+const $=id=>document.getElementById(id);
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const chat=$("chat");let run=0;
+const L=()=>T[lang];
+const tom=(()=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()+1);return d})();
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+const longD=d=>d.toLocaleDateString(L().locale,{weekday:"long",day:"numeric",month:"long"});
+const frT=s=>lang!=="en"?s.replace(/ ([?!:;])/g," $1"):s;
+const sleep=(ms,id)=>new Promise((res,rej)=>setTimeout(()=>id===run?res():rej("stop"),reduce?0:ms));
+const check='<svg viewBox="0 0 18 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6.5l3 3L11 2"/><path d="M7 9.5L14 2"/></svg>';
+let clock,lastSide=null;
+const t=()=>String(clock.getHours()).padStart(2,"0")+":"+String(clock.getMinutes()).padStart(2,"0");
+const tick=m=>clock=new Date(clock.getTime()+m*60000);
+const scroll=()=>chat.scrollTo({top:chat.scrollHeight,behavior:reduce?"auto":"smooth"});
+function chip(x){lastSide=null;chat.insertAdjacentHTML("beforeend",`<div class="chip">${x}</div>`);scroll()}
+function bubble(side,html,extra=""){
+  const first=lastSide!==side;lastSide=side;
+  const meta=`<span class="meta">${t()}${side==="out"?check:""}</span>`;
+  const row=document.createElement("div");row.className=`row ${side}${first?" first":""}`;
+  const hasBlock=html.includes('class="opts')||html.includes('class="btns');
+  row.innerHTML=`<div class="b${extra?" "+extra:""}">${html}${hasBlock?"":meta}</div>`;
+  if(hasBlock)row.querySelector(".opts,.btns").insertAdjacentHTML("beforebegin",meta);
+  chat.appendChild(row);scroll();return row;
+}
+async function typing(ms,id){
+  $("status").textContent=L().typing;$("status").classList.add("typing");
+  const row=document.createElement("div");row.className="row in"+(lastSide!=="in"?" first":"");
+  row.innerHTML='<div class="b"><span class="dots"><i></i><i></i><i></i></span></div>';chat.appendChild(row);scroll();
+  try{await sleep(ms,id)}finally{row.remove();$("status").textContent=L().online;$("status").classList.remove("typing")}
+}
+async function tap(el,id){if(!el)return;const r=el.getBoundingClientRect(),s=document.createElement("span");s.className="ripple";s.style.left=r.width/2+"px";s.style.top=r.height/2+"px";el.appendChild(s);el.classList.add("tapped");await sleep(520,id)}
+async function typeIn(text,id){
+  const tx=$("txt");let v="";$("mic").style.display="none";$("plane").style.display="block";
+  for(const ch of text){v+=ch;tx.innerHTML=v.replace(/&/g,"&amp;").replace(/</g,"&lt;")+'<span class="caret"></span>';await sleep(55+Math.random()*45,id)}
+  await sleep(250,id);$("send").classList.add("press");await sleep(150,id);$("send").classList.remove("press");
+  tx.textContent="";$("mic").style.display="block";$("plane").style.display="none";
+}
+function toast(on,x){if(x)$("toastS").textContent=x;$("toast").classList.toggle("on",on)}
+function renderStudio(stage){
+  const l=L(),booked=TAKEN.length+(stage>0?1:0);
+  $("stWhen").textContent=`${cap(longD(tom))} · 18:00`;
+  $("rg").innerHTML=Array.from({length:10},(_,i)=>{const n=i+1,tk=TAKEN.includes(n),nw=n===4&&stage>0;return `<div class="rf${tk?" taken":""}${nw?" new":""}">${n}</div>`}).join("");
+  $("cnt").textContent=`${booked} / 10`;
+  const w=$("whoNew");
+  if(stage>0){w.innerHTML=`<b>${l.newWho}</b>${stage>1?`<span class="ok">${l.newOk}</span>`:l.newVia}`;w.classList.add("on")}else{w.classList.remove("on");w.innerHTML=""}
+}
+function statics(){
+  const l=L();document.documentElement.lang=lang==="en"?"en":"fr";
+  document.querySelectorAll("[data-i]").forEach(el=>{const v=l[el.dataset.i];if(v===undefined)return;if(el.dataset.i==="h1")el.innerHTML=v;else el.textContent=frT(v)});
+  document.querySelectorAll("[data-lang]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===lang));
+  $("status").textContent=l.online;$("status").classList.remove("typing");
+}
+async function play(){
+  const id=++run,l=L();
+  chat.innerHTML="";lastSide=null;$("endcap").classList.remove("on");toast(false);
+  $("txt").textContent="";$("mic").style.display="block";$("plane").style.display="none";
+  statics();renderStudio(0);
+  clock=new Date();clock.setHours(21,47,0,0);
+  try{
+    await sleep(700,id);chip(l.today);await sleep(500,id);
+    await typeIn(frT(l.q),id);bubble("out",frT(l.q));
+    await sleep(500,id);await typing(1500,id);
+    const r1=bubble("in",`${frT(l.hello)}<div class="opts">${l.opts.map((o,i)=>`<button class="opt" data-o="${i}"><span><b>${o[0]}${o[3]?`<span class="tag">${o[3]}</span>`:""}</b><small>${o[1]}</small></span><span class="pr">${o[2]}</span></button>`).join("")}</div>`);
+    await sleep(600,id);await typing(1000,id);bubble("in",frT(l.suggest));
+    await sleep(1600,id);await tap(r1.querySelector('[data-o="0"]'),id);
+    tick(1);bubble("out",l.opts[0][0]);
+    await sleep(400,id);await typing(1300,id);
+    const r2=bubble("in",`${frT(l.slotsIntro(cap(longD(tom))))}<div class="btns">${l.slots.map(([tm,c],i)=>`<button data-sl="${i}">${tm}<small>${c}</small></button>`).join("")}</div>`);
+    await sleep(1500,id);await tap(r2.querySelector('[data-sl="0"]'),id);
+    bubble("out",`18:00 · Reformer Flow`);
+    await sleep(400,id);await typing(1300,id);
+    const r3=bubble("in",`${frT(l.reformers)}<div class="btns grid"><button data-r="4">${l.r4}</button><button data-r="7">${l.r7}</button></div>`);
+    await sleep(1500,id);await tap(r3.querySelector('[data-r="4"]'),id);
+    bubble("out",l.r4);
+    await sleep(400,id);await typing(900,id);bubble("in",frT(l.askName));
+    await sleep(700,id);tick(1);await typeIn(l.name,id);bubble("out",l.name);
+    await sleep(400,id);await typing(1500,id);
+    bubble("in",`<div class="ok"><i>✓</i>${l.ok}</div><dl><dt>${l.lCls}</dt><dd>Reformer Flow</dd><dt>${l.lDate}</dt><dd>${cap(longD(tom))}</dd><dt>${l.lTime}</dt><dd>18:00 · 50 min</dd><dt>${l.lSpot}</dt><dd>${l.r4}</dd><dt>${l.lCoach}</dt><dd>Yasmine</dd><dt>${l.lPrice}</dt><dd>150 MAD</dd></dl>${frT(l.after)}`,"card");
+    await sleep(500,id);renderStudio(1);toast(true,l.toast);
+    await sleep(2800,id);toast(false);await sleep(900,id);
+    clock=new Date(tom);clock.setHours(15,0,0,0);
+    chip(cap(longD(tom)));await sleep(700,id);
+    const r4=bubble("in",`${frT(l.remind)}<div class="btns"><button data-y="1">${l.yes}</button><button>${l.move}</button></div>`);
+    await sleep(1800,id);tick(4);await tap(r4.querySelector('[data-y="1"]'),id);
+    bubble("out",l.yes);await sleep(400,id);await typing(900,id);bubble("in",frT(l.bye));
+    renderStudio(2);await sleep(1200,id);
+    chat.insertAdjacentHTML("beforeend",'<div style="height:64px"></div>');scroll();
+    $("endcap").classList.add("on");
+  }catch(e){if(e!=="stop")console.error(e)}
+}
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-lang],[data-replay],#endcap");if(!b)return;
+  if(b.dataset.lang){lang=b.dataset.lang;try{localStorage.setItem("melt-agent-lang",lang)}catch(_){}}
+  play();
+});
+play();
+</script>
+</body>
+</html>
